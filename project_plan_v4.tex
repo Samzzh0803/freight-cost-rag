@@ -1,0 +1,706 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[margin=2.5cm, headheight=14pt]{geometry}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{mdframed}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% Colors
+\definecolor{accent}{RGB}{30, 80, 162}
+\definecolor{warn}{RGB}{180, 60, 40}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{darkgray}{RGB}{60, 60, 60}
+\definecolor{green}{RGB}{30, 120, 60}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries\color{accent}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{darkgray}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+
+% Code style
+\lstset{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{gray!40},
+  xleftmargin=8pt,
+  xrightmargin=8pt,
+  columns=flexible,
+}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{gray}{\footnotesize Project A1 --- Freight Cost Intelligence}}
+\lhead{\textcolor{gray}{\footnotesize Sameer --- Portfolio Roadmap}}
+\rfoot{\textcolor{gray}{\footnotesize \thepage}}
+\lfoot{\textcolor{gray}{\footnotesize Apr--Jul 2026}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Framed boxes
+\newmdenv[
+  linecolor=accent,
+  linewidth=1.5pt,
+  topline=true, bottomline=true, leftline=true, rightline=false,
+  backgroundcolor=accent!5,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{infobox}
+
+\newmdenv[
+  linecolor=warn,
+  linewidth=1.5pt,
+  topline=true, bottomline=true, leftline=true, rightline=false,
+  backgroundcolor=warn!5,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{warnbox}
+
+\newmdenv[
+  linecolor=green,
+  linewidth=1.5pt,
+  topline=true, bottomline=true, leftline=true, rightline=false,
+  backgroundcolor=green!5,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{featurebox}
+
+\hypersetup{colorlinks=true, linkcolor=accent, urlcolor=accent}
+
+\begin{document}
+
+% ── Title Page ──────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\huge\bfseries\color{accent} Project A1\par}
+  \vspace{0.5cm}
+  {\LARGE Freight Cost Intelligence\par}
+  \vspace{0.3cm}
+  {\large Health Commodity Freight Cost Prediction Enriched with UNCTAD Bilateral Rate Benchmarks\par}
+  \vspace{0.2cm}
+  {\normalsize USAID Transaction Data + UNCTAD-World Bank Global Transport Costs Dataset + Unified RAG + What-If Chat\par}
+  \vspace{2cm}
+  \rule{0.6\textwidth}{0.4pt}\\[1em]
+  {\large Sameer \textbar{} Habib University, Karachi\par}
+  {\large Portfolio Block 1 --- April to July 2026\par}
+  \vspace{1cm}
+  {\normalsize Part of a 4-project arc targeting supply chain data science roles in Pakistan\\
+  and later RWTH Aachen MSc Data Science application (Winter 2028/29)\par}
+  \vspace{2cm}
+  \rule{0.6\textwidth}{0.4pt}\\[1em]
+  {\small\color{gray} v4 --- Pivoted from two-dataset multimodal to USAID + UNCTAD enrichment after Brunel EDA gate failure (single-date snapshot, 99.5\% AIR imbalance, 24\% unratable orders)}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ── 1. Why This Exists ───────────────────────────────────────────────────────
+\section{Why This Project Exists}
+
+\begin{infobox}
+\textbf{One-line goal:} Build and deploy a health commodity freight cost prediction model on USAID shipment data, enriched with UNCTAD bilateral freight rate benchmarks as external features, with generative SHAP-grounded explanation, cited trade-doc context, and a what-if chat --- proving end-to-end SC-DS + LLM integration capability for Pakistan junior analyst roles and RWTH/Werkstudent applications.
+\end{infobox}
+
+This is not a Kaggle competition. The goal is a shipped, deployed artifact that a recruiter can click, a hiring manager can interrogate, and an RWTH admissions committee reads as a concrete portfolio piece.
+
+\textbf{Why supply chain?} Supply chain was chosen over generic DS and fintech as the primary career vertical. It pairs domain specificity with genuine demand in Pakistan's logistics, e-commerce, and FMCG sectors. Junior analyst roles at companies like Daraz, Nestl\'{e}, and 3PLs explicitly look for cost modelling and demand forecasting skills.
+
+\textbf{Why generative explanation + chat?} A plain prediction number has zero interview story. A prediction with a cited plain-English explanation --- grounded in the model's SHAP values and retrieved trade documents --- is memorable, differentiated, and demonstrates LLM integration, which is increasingly expected in SC-DS roles. The what-if chat upgrades the tool from demo to decision-support, which is the actual job.
+
+\textbf{Why USAID + UNCTAD enrichment, not two separate models?} The v3 plan included Brunel Supply Chain Logistics as a second dataset. Brunel EDA (Week 2) revealed fatal structural problems: all 9,215 orders share a single date (no time-based split possible), 99.5\% of ratable orders are AIR (GROUND sub-model has 34 rows), and 24\% of orders are unratable due to a discontinued carrier. Brunel is a linear-programming benchmark snapshot, not a freight cost time series. It was dropped at the Week 2 decision gate.
+
+The replacement enrichment strategy uses the \textbf{UNCTAD-World Bank Global Transport Costs Dataset for International Trade (GTCDIT)}, a free, authoritative dataset covering bilateral freight rates (air, sea, rail, road) by country pair and commodity group, 2016--2021. This is used not as a second training dataset but as a \textbf{lookup feature table}: for each USAID shipment, we join the UNCTAD ad-valorem freight rate benchmark for the relevant origin country $\rightarrow$ destination country $\rightarrow$ mode combination. This gives the model an external structural cost signal --- the kind of benchmark a real freight analyst would consult. The framing in the README is accurate and defensible: ``We use USAID transaction data enriched with UNCTAD bilateral freight rate benchmarks as a lane-level cost signal.''
+
+\begin{warnbox}
+\textbf{Temporal mismatch --- know this for interviews.} USAID spans approximately 2006--2015; UNCTAD covers 2016--2021. There is no year overlap. UNCTAD is therefore used as a \textbf{structural benchmark}, not a time-matched join. The assumption: bilateral freight rate intensities for a given lane and mode are sufficiently stable structural signals even when drawn from a different period. This is standard practice in gravity-model freight research. In the README and in interviews, state this explicitly. Do not pretend the join is temporal.
+\end{warnbox}
+
+\textbf{How this fits the larger plan:}
+\begin{itemize}[noitemsep]
+  \item Phase 1 (now): Build portfolio, GitHub, LinkedIn presence.
+  \item Phase 2 (4th year + 1yr post-grad): Land SC data analyst/DS role in Pakistan (80--150k PKR).
+  \item Phase 3 (mid-2027): GRE, IELTS, APS certificate, blocked account (EUR 11,208).
+  \item Phase 4: RWTH Aachen MSc Data Science (Winter 2028/29) $\rightarrow$ Werkstudent $\rightarrow$ found company.
+\end{itemize}
+
+Seeds the final-year project (SC data + RAG/ML + deployed tool = triple asset: portfolio, thesis demo, interview piece).
+
+% ── 2. Project Specification ─────────────────────────────────────────────────
+\section{Project Specification}
+
+\subsection{Problem Statement}
+Build a freight cost prediction model on USAID health commodity shipment data (Air/Truck/Ocean, 10k+ records), enriched with UNCTAD bilateral freight rate benchmarks as engineered features. The model returns a predicted cost plus uncertainty range. A generative explanation layer reads SHAP values and retrieves relevant trade-document chunks to produce a plain-English summary with feature breakdown and cited context. A what-if chat lets the user ask follow-ups including scenario modifications (``what if I switch mode?'', ``what if destination is Nigeria instead?'') that rerun the model and return a new prediction with explanation.
+
+\subsection{App Features (Final State)}
+
+\begin{featurebox}
+\textbf{Tab 1 --- Predict and Explain}
+\begin{enumerate}[noitemsep]
+  \item User fills shipment form: origin hub, destination country, mode (Air/Truck/Ocean), weight, commodity, INCO term.
+  \item Model returns predicted freight cost + uncertainty range.
+  \item UNCTAD benchmark for the lane is shown alongside: ``UNCTAD ad-valorem rate for [origin] $\rightarrow$ [destination] via [mode]: X\%''.
+  \item LLM generates plain-English summary of why this cost was predicted.
+  \item Feature importance breakdown table shown (top 5--7 SHAP drivers), including UNCTAD feature if it appears.
+  \item Cited trade-doc context shown (e.g. relevant Incoterms clause, HS code note).
+\end{enumerate}
+\end{featurebox}
+
+\begin{featurebox}
+\textbf{Tab 2 --- What-If Chat}
+\begin{enumerate}[noitemsep]
+  \item Chat pre-seeded with current shipment context from Tab 1.
+  \item User asks alternatives: ``What if I use sea instead of air?'' ``What if I ship to Uganda instead of Kenya?''
+  \item System parses intent $\rightarrow$ modifies input dict (including re-looking up UNCTAD benchmark for new lane) $\rightarrow$ reruns model $\rightarrow$ returns new prediction.
+  \item Response includes: new cost, delta vs original, plain-English explanation, cited trade docs.
+  \item General trade questions (Incoterms, HS codes, glossary) answered via unified RAG with citations.
+\end{enumerate}
+\end{featurebox}
+
+\subsection{Datasets}
+
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Dataset} & \textbf{Description} & \textbf{Source} \\
+\midrule
+USAID Supply Chain Shipment Pricing & 10k+ real shipment records: origin (hub), destination country, mode (Air dominant, Truck, some Ocean, N/A), weight, freight cost, INCO term, commodity. Domain: HIV/ARV health commodities to PEPFAR countries. Time range: approx. 2006--2015. Used as primary training dataset. & Kaggle (apoorvwatsky / divyeshardeshana) \\
+\addlinespace
+UNCTAD-World Bank GTCDIT & Global Transport Costs Dataset for International Trade. Bilateral freight rate benchmarks (ad-valorem \%, \$/kg) by origin country, destination country, commodity group (HS 2017 4-digit), and mode (air, sea, rail, road). Covers 2016--2021, 170+ economies, 92\% of global merchandise trade. Used as a lookup feature table joined onto USAID records by country-pair + mode. Not a training dataset --- a structural benchmark enrichment. & UNCTADstat Data Centre: \url{https://unctadstat.unctad.org/datacentre/dataviewer/US.TransportCosts} (free, bulk download available) \\
+\addlinespace
+RAG Corpus & Incoterms 2020 explainers, HS code chapter descriptions, shipping glossaries. Mode-agnostic trade knowledge. & ICC, WCO, public freight sites \\
+\bottomrule
+\end{tabularx}
+
+\begin{warnbox}
+\textbf{Do not commit raw data to git.} Add \texttt{data/raw/} and \texttt{data/processed/} to \texttt{.gitignore}. Corpus PDFs in \texttt{data/corpus/} can be committed if under 10MB total.
+\end{warnbox}
+
+\begin{infobox}
+\textbf{On the UNCTAD enrichment design:} UNCTAD GTCDIT is a lookup table, not a training dataset. For each USAID shipment row, we look up the UNCTAD ad-valorem freight rate for (origin\_country, destination\_country, mode) and add it as a feature column (\texttt{unctad\_adval\_rate}). If no match exists for a specific HS code, aggregate to commodity group or fall back to mode-level average for that country pair. Missing coverage $\rightarrow$ NaN $\rightarrow$ LightGBM handles natively. This produces one model, one training dataset, one deployment --- significantly simpler architecture than the two-model plan.
+\end{infobox}
+
+\subsection{Stack}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Layer} & \textbf{Tools} \\
+\midrule
+Data wrangling & \texttt{pandas}, \texttt{numpy} \\
+Modelling & \texttt{scikit-learn} (pipelines, baseline), \texttt{xgboost}, \texttt{lightgbm} \\
+Explainability & \texttt{shap} --- SHAP values for feature importance, feeds LLM explanation prompt \\
+Visualization & \texttt{matplotlib}, \texttt{seaborn} \\
+Embeddings & \texttt{sentence-transformers} (\texttt{all-MiniLM-L6-v2}) --- CPU-safe \\
+Vector store & \texttt{faiss-cpu} (primary) \textbar{} \texttt{chromadb} (alt) \\
+PDF parsing & \texttt{pypdf} (primary) \textbar{} \texttt{pdfplumber} (alt) \\
+LLM client & \texttt{groq} (free, primary) \textbar{} \texttt{openai} (fallback via env var) \\
+App & \texttt{streamlit} \\
+Deployment & Hugging Face Spaces (free) \\
+Secrets & \texttt{python-dotenv} local, HF Secrets in prod \\
+Tests & \texttt{pytest} \\
+Linting & \texttt{ruff} \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Key addition: \texttt{shap}.} SHAP values are the bridge between the ML model and the LLM explanation. The top SHAP contributors for a given prediction get injected into the LLM prompt, grounding the explanation in actual model reasoning rather than hallucination. If \texttt{unctad\_adval\_rate} has high SHAP importance, the explanation can cite it as ``the UNCTAD benchmark rate for this lane was X\%, signalling a high-cost corridor.''
+
+\textbf{Hardware:} 16GB RAM, Intel HD only. All choices are CPU-safe. Do not use CUDA-dependent models.
+
+% ── 3. Repository Structure ──────────────────────────────────────────────────
+\section{Repository Structure}
+
+\begin{lstlisting}
+freight-cost-rag/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── .env.example
+├── data/
+│   ├── raw/
+│   │   ├── usaid/          # SCMS_Delivery_History CSV
+│   │   └── unctad/         # GTCDIT bulk download CSV(s)
+│   ├── processed/          # gitignored
+│   └── corpus/             # RAG PDFs -- commit if small
+├── notebooks/
+│   ├── 01_eda_usaid.ipynb
+│   ├── 02_eda_unctad.ipynb        # schema tour, coverage audit, join plan
+│   ├── 03_feature_engineering.ipynb
+│   ├── 04_baseline.ipynb
+│   ├── 05_tree_models.ipynb
+│   ├── 06_unctad_feature_analysis.ipynb  # SHAP analysis of UNCTAD feature
+│   └── 07_rag_prototype.ipynb
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── load_usaid.py
+│   │   └── load_unctad.py    # loads GTCDIT, builds lookup dict
+│   ├── features/
+│   │   ├── __init__.py
+│   │   └── features.py       # USAID features + UNCTAD enrichment join
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── train.py
+│   │   └── predict.py
+│   ├── explainer.py          # SHAP + LLM explanation
+│   └── rag/
+│       ├── __init__.py
+│       ├── ingest.py
+│       ├── retriever.py
+│       ├── generator.py
+│       └── whatif.py
+├── tests/
+│   ├── test_features.py
+│   ├── test_unctad_join.py   # verify coverage, fallback logic
+│   ├── test_explainer.py
+│   └── test_rag.py
+├── app/
+│   └── streamlit_app.py
+├── models/                   # gitignored
+│   └── usaid_model.pkl
+└── scripts/
+    └── train.py
+\end{lstlisting}
+
+\subsection{Copy-Paste Files}
+
+\subsubsection{.gitignore}
+\begin{lstlisting}
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+data/raw/
+data/processed/
+models/
+*.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.idea/
+*.log
+.streamlit/secrets.toml
+\end{lstlisting}
+
+\subsubsection{requirements.txt}
+\begin{lstlisting}
+pandas>=2.0
+numpy
+scikit-learn>=1.3
+xgboost
+lightgbm
+shap
+matplotlib
+seaborn
+jupyter
+sentence-transformers
+faiss-cpu
+pypdf
+groq
+streamlit
+python-dotenv
+pytest
+ruff
+\end{lstlisting}
+
+\subsubsection{.env.example}
+\begin{lstlisting}
+GROQ_API_KEY=your_key_here
+OPENAI_API_KEY=optional_fallback
+LLM_PROVIDER=groq
+\end{lstlisting}
+
+% ── 4. 13-Week Roadmap ───────────────────────────────────────────────────────
+\section{13-Week Roadmap}
+
+\textbf{Schedule:} Weekend-heavy. Saturday/Sunday = 4--5hr deep work. Weekdays = 30--45min touches. Do not fight this rhythm.
+
+\begin{infobox}
+\textbf{Status at time of writing (v4):} Week 1 USAID EDA complete. Brunel dropped at Week 2 decision gate. Plan restarts at Week 2 with UNCTAD EDA. USAID findings already documented: time-based 80/20 split at Dec 2013; weight = commodity weight (unit $\times$ qty); 5 outliers need 99th-pct capping; freight costs doubled over dataset period; log-log weight vs cost shows power-law relationship; CIF/DAP/DDU grouped as ``Other''.
+\end{infobox}
+
+\subsection{Phase 1 --- UNCTAD EDA + USAID Feature Engineering + Baseline (Weeks 2--4)}
+
+\subsubsection*{Week 2 --- UNCTAD Pull and EDA (\textasciitilde{}7 hrs)}
+
+\textbf{Download:}
+\begin{itemize}[noitemsep]
+  \item Go to \url{https://unctadstat.unctad.org/datacentre/dataviewer/US.TransportCosts}
+  \item Select: all origins, all destinations, mode = air + sea (the two modes relevant to USAID), years = all available (2016--2021), indicator = ad-valorem transport costs (\%) and per-unit transport costs (\$/kg).
+  \item Download bulk CSV $\rightarrow$ \texttt{data/raw/unctad/}.
+\end{itemize}
+
+\textbf{Weekday touches --- \texttt{src/data/load\_unctad.py}:}
+\begin{itemize}[noitemsep]
+  \item Load GTCDIT CSV. Understand columns: origin (M49 code), destination (M49 code), commodity (HS 2017 4-digit), mode, year, ad-valorem rate, \$/kg rate.
+  \item Map M49 country codes to ISO-3 or country names to match USAID destination country column.
+  \item Build a lookup dict: \texttt{(origin\_country, dest\_country, mode) $\rightarrow$ median ad-valorem rate across years}. Median across 2016--2021 gives a stable structural benchmark.
+  \item Check: what share of USAID origin/destination/mode combinations have UNCTAD coverage?
+\end{itemize}
+
+\textbf{Weekend block --- \texttt{02\_eda\_unctad.ipynb}:}
+\begin{itemize}[noitemsep]
+  \item Coverage audit: for USAID rows, what \% get a direct UNCTAD match? What \% require country-level aggregation fallback? What \% remain NaN?
+  \item Distribution of UNCTAD ad-valorem rates for USAID lanes. Are the rates plausible (air should be higher than sea)?
+  \item Correlation: does UNCTAD benchmark correlate with USAID actual freight cost at the lane level?
+  \item ``Findings'' markdown cell: honest read on UNCTAD coverage and signal quality.
+\end{itemize}
+
+\begin{warnbox}
+\textbf{Week 2 decision gate for UNCTAD:} If coverage is below 30\% of USAID rows even after fallback, or if UNCTAD ad-valorem rates show zero correlation with USAID freight costs, drop the UNCTAD feature. Reframe to USAID-only. Do not sunk-cost a weak external feature. Post findings before proceeding.
+\end{warnbox}
+
+\subsubsection*{Week 3 --- Feature Engineering (\textasciitilde{}7 hrs)}
+
+\textbf{Weekday touches:}
+\begin{itemize}[noitemsep]
+  \item \texttt{src/data/load\_usaid.py} --- clean loader (outlier capping, mode grouping, log target).
+  \item \texttt{src/features/features.py} --- route encoding, weight bucketing, mode handling, INCO term encoding, year feature, UNCTAD join logic with fallback hierarchy.
+  \item \texttt{tests/test\_features.py} --- sanity checks.
+  \item \texttt{tests/test\_unctad\_join.py} --- verify fallback logic: HS4 $\rightarrow$ HS2 $\rightarrow$ mode-level average $\rightarrow$ NaN.
+\end{itemize}
+
+\textbf{Weekend block --- \texttt{03\_feature\_engineering.ipynb}:}
+\begin{itemize}[noitemsep]
+  \item Final feature set with UNCTAD column included.
+  \item Missing value audit post-join. How many NaNs in \texttt{unctad\_adval\_rate}?
+  \item Time-based split: 80\% train (pre-Dec 2013) / 20\% test (post-Dec 2013).
+  \item README update: problem, data, enrichment approach.
+\end{itemize}
+
+\subsubsection*{Week 4 --- Baseline + Tree Models (\textasciitilde{}7 hrs)}
+
+\textbf{\texttt{04\_baseline.ipynb}:}
+\begin{itemize}[noitemsep]
+  \item Log-transform target. LinearRegression baseline (with and without UNCTAD feature). RMSE, MAE, R\textsuperscript{2}.
+\end{itemize}
+
+\textbf{\texttt{05\_tree\_models.ipynb}:}
+\begin{itemize}[noitemsep]
+  \item XGBoost + LightGBM. LightGBM native categorical handling for country, INCO term, commodity.
+  \item LightGBM handles NaN in \texttt{unctad\_adval\_rate} natively --- no imputation needed.
+  \item Compare vs linear baseline.
+  \item One round \texttt{RandomizedSearchCV} on LightGBM. No rabbit-holing.
+  \item Pickle $\rightarrow$ \texttt{models/usaid\_model.pkl}.
+  \item Install \texttt{shap}. Compute SHAP on 5 sample predictions. Check whether \texttt{unctad\_adval\_rate} appears in top-10 features.
+\end{itemize}
+
+\subsection{Phase 2 --- UNCTAD Feature Analysis + Buffer (Weeks 5--6)}
+
+\subsubsection*{Week 5 --- UNCTAD Feature Analysis (\textasciitilde{}7 hrs)}
+
+\textbf{\texttt{06\_unctad\_feature\_analysis.ipynb}:}
+\begin{itemize}[noitemsep]
+  \item SHAP importance of \texttt{unctad\_adval\_rate} vs other features.
+  \item Partial dependence plot: as UNCTAD benchmark increases, does predicted cost increase? (Sanity check.)
+  \item Residuals by UNCTAD coverage: does the model perform better on rows with direct UNCTAD match vs fallback vs NaN?
+  \item Honest writeup: what does the UNCTAD feature contribute, and what are its limitations (temporal mismatch, aggregation)?
+\end{itemize}
+
+\subsubsection*{Week 6 --- Buffer (\textasciitilde{}7 hrs)}
+
+\begin{warnbox}
+\textbf{Non-negotiable buffer.} Absorbs whatever broke in Weeks 2--5. If genuinely ahead: refactor \texttt{src/models/} into clean \texttt{train()} + \texttt{predict(inputs)} functions. Write \texttt{scripts/train.py} as CLI entry point.
+\end{warnbox}
+
+\subsection{Phase 3 --- RAG Layer (Weeks 7--9)}
+
+\subsubsection*{Week 7 --- Corpus and Ingestion}
+
+Build \texttt{data/corpus/}:
+\begin{itemize}[noitemsep]
+  \item Incoterms 2020 explainers: ICC public summaries + freight forwarder PDFs (5--10 docs).
+  \item HS code chapter descriptions: WCO public or CSV-to-text.
+  \item Shipping glossary: logistics firm websites, public PDFs.
+\end{itemize}
+
+\texttt{src/rag/ingest.py}: parse PDFs $\rightarrow$ chunk (500 tokens, 50 overlap) $\rightarrow$ embed (\texttt{all-MiniLM-L6-v2}) $\rightarrow$ FAISS index $\rightarrow$ save to disk.
+
+Alt if PDFs chaotic: convert corpus to \texttt{.txt} manually once, commit, parse as plain text.
+
+\subsubsection*{Week 8 --- Retriever and Generator}
+
+\texttt{src/rag/retriever.py}: load FAISS, similarity search, return top-k chunks with source metadata.
+
+\texttt{src/rag/generator.py}: Groq client, prompt template, answer + citations.
+
+\begin{lstlisting}[language=Python]
+# src/config.py
+import os
+
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
+
+def get_llm_client():
+    if LLM_PROVIDER == "groq":
+        from groq import Groq
+        return Groq(api_key=os.getenv("GROQ_API_KEY"))
+    elif LLM_PROVIDER == "openai":
+        from openai import OpenAI
+        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+\end{lstlisting}
+
+\texttt{07\_rag\_prototype.ipynb}: 10 test queries end-to-end. Log quality. Note failures.
+
+\subsubsection*{Week 9 --- Generative Explanation (SHAP $\rightarrow$ LLM)}
+
+Implement \texttt{src/explainer.py}. This is where ML and RAG connect.
+
+\textbf{Pipeline:}
+\begin{enumerate}
+  \item User submits form.
+  \item Model predicts cost. SHAP computes top-5 feature contributions for this prediction.
+  \item Retriever pulls relevant trade doc chunks.
+  \item LLM prompt assembled: shipment inputs + SHAP table + retrieved chunks + UNCTAD benchmark for this lane.
+  \item LLM returns plain-English summary + cites trade docs.
+\end{enumerate}
+
+\textbf{Prompt template:}
+\begin{lstlisting}
+SYSTEM: You are a freight cost analyst specialising in health commodity
+supply chains. Explain shipment cost predictions clearly. Always cite
+the trade documents provided. Never invent rules not present in context.
+
+USER:
+Shipment: {origin} to {destination}, mode: {mode}, weight: {weight}kg,
+commodity: {commodity}, INCO term: {inco_term}.
+
+Predicted cost: ${predicted_cost} (range: ${low} -- ${high})
+
+UNCTAD bilateral freight benchmark for {origin} -> {destination} via {mode}:
+Ad-valorem rate: {unctad_adval_rate}% (2016-2021 median, structural benchmark)
+
+Top cost drivers (SHAP values, higher = more impact on cost):
+{shap_table}
+
+Relevant trade document excerpts:
+{retrieved_chunks}
+
+Write:
+1. A 3-4 sentence plain-English summary of why this cost was predicted.
+2. A bullet list of the top cost drivers with a one-line explanation each.
+3. One relevant trade rule or definition from the documents above
+   (cite the source).
+\end{lstlisting}
+
+Add query caching (\texttt{functools.lru\_cache} or dict keyed on input hash).
+
+\subsection{Phase 4 --- What-If Chat and App (Weeks 10--12)}
+
+\subsubsection*{Week 10 --- What-If Chat Logic}
+
+Implement \texttt{src/rag/whatif.py}.
+
+\textbf{Architecture:}
+\begin{enumerate}
+  \item \textbf{Intent parsing:} LLM call \#1 --- extract structured modification intent from user message + current shipment context.
+  \item \textbf{Input modification:} apply changes; re-lookup UNCTAD benchmark for new lane if origin/destination/mode changed.
+  \item \textbf{Reprediction:} run modified inputs through model. New cost + SHAP.
+  \item \textbf{RAG retrieval:} retrieve trade doc chunks relevant to the modification.
+  \item \textbf{Response generation:} LLM call \#2 --- new prediction, delta, explanation, citations.
+\end{enumerate}
+
+\textbf{Intent parsing prompt:}
+\begin{lstlisting}
+SYSTEM: Extract shipment modification intent as JSON. Only output JSON.
+No preamble.
+
+USER:
+Current shipment: {shipment_dict_as_json}
+User message: "{user_message}"
+
+Output JSON with keys:
+{
+  "modification_type": "mode_change | route_change | weight_change | other",
+  "changes": {"field": "new_value"},
+  "is_what_if": true | false,
+  "rag_only": true | false
+}
+\end{lstlisting}
+
+\textbf{Stateful chat in Streamlit:} use \texttt{st.session\_state} to persist shipment dict and chat history across reruns.
+
+\subsubsection*{Week 11 --- Streamlit App (Local)}
+
+\texttt{app/streamlit\_app.py} --- two tabs:
+
+\textbf{Tab 1 --- Predict and Explain:}
+\begin{itemize}[noitemsep]
+  \item Shipment form: origin hub, destination country, mode, weight, commodity, INCO term.
+  \item Predict $\rightarrow$ cost + uncertainty.
+  \item Explanation: LLM summary + SHAP table + UNCTAD benchmark callout + cited trade context.
+  \item ``Open chat about this shipment'' $\rightarrow$ Tab 2, pre-seeded.
+  \item \texttt{@st.cache\_resource} for model + FAISS index + UNCTAD lookup dict.
+\end{itemize}
+
+\textbf{Tab 2 --- What-If Chat:}
+\begin{itemize}[noitemsep]
+  \item Shows current shipment summary at top.
+  \item Chat input, history via \texttt{st.chat\_message}.
+  \item Example prompts: ``What if I use sea freight?'', ``What if destination is Uganda?'', ``What does CIF mean?''
+  \item ``Reset shipment'' button clears session state.
+\end{itemize}
+
+\subsubsection*{Week 12 --- Deploy and Polish}
+
+\begin{enumerate}[noitemsep]
+  \item Create HF Space (Streamlit), link to GitHub.
+  \item Add \texttt{GROQ\_API\_KEY} to HF Secrets.
+  \item Cold start test. Document wait in README.
+  \item Verify model pickle + FAISS + UNCTAD lookup dict load on HF CPU.
+  \item Example shipments (one-click ``Try this'').
+  \item Friendly error messages for rate limits.
+  \item ``How it works'' collapsible: diagram showing USAID data + UNCTAD enrichment + RAG + LLM.
+\end{enumerate}
+
+\subsection{Phase 5 --- Ship (Week 13)}
+
+\subsubsection*{Week 13 --- Documentation + Interview Prep}
+
+README 30-second skim test:
+\begin{enumerate}[noitemsep]
+  \item Problem: health commodity freight cost prediction.
+  \item Data: USAID transaction records enriched with UNCTAD bilateral freight rate benchmarks.
+  \item Approach: LightGBM with UNCTAD enrichment, RAG-grounded generative explanation, what-if chat.
+  \item Results: RMSE/MAE, baseline vs LightGBM, UNCTAD feature SHAP importance.
+  \item Demo: link + screenshots.
+  \item Next steps: Olist last-mile dataset as A2, commercial freight data integration.
+\end{enumerate}
+
+\textbf{Interview Q\&A (14 samples):}
+\begin{itemize}[noitemsep]
+  \item Why USAID + UNCTAD enrichment instead of two separate ML datasets?
+  \item Why was Brunel dropped? What did the EDA reveal?
+  \item What is the temporal mismatch between USAID and UNCTAD, and how do you handle it?
+  \item Why log-transform the target?
+  \item How does SHAP ground the LLM explanation?
+  \item Why does LightGBM handle the UNCTAD NaN natively, and what does that mean?
+  \item How does the what-if chat re-lookup the UNCTAD benchmark when the lane changes?
+  \item What's the RMSE in USD terms for a typical shipment?
+  \item What happens when the user asks something outside the corpus?
+  \item What are the limitations of using health commodity data for general freight pricing?
+  \item How would you retrain this model on new data in production?
+  \item Why is random train/test split wrong for this data?
+  \item What would you add with 6 more months?
+  \item What's the coverage rate of UNCTAD on USAID lanes, and what's your fallback strategy?
+\end{itemize}
+
+% ── 5. Alternatives Table ────────────────────────────────────────────────────
+\section{Alternatives Table}
+
+Debug max 2 hours before swapping.
+
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Blocker} & \textbf{Primary} & \textbf{Alternative} \\
+\midrule
+UNCTAD coverage too low ($<$30\% of USAID rows) & UNCTAD join & Drop UNCTAD feature. USAID-only model. Reframe README: ``pure health commodity SC analysis.'' \\
+\addlinespace
+UNCTAD rates uncorrelated with USAID costs & Use as feature & Drop UNCTAD feature. Keep model simple. Still a strong portfolio piece. \\
+\addlinespace
+USAID too dirty/small & USAID Kaggle & DataCo Smart SC (note: shipping modes are fulfillment tiers, not real freight modes --- reframe entirely if used) \\
+\addlinespace
+Groq rate limits hit during demo & Groq free & together.ai free tier or OpenAI \$5 budget \\
+\addlinespace
+FAISS install fails (Windows) & faiss-cpu & chromadb --- cleaner pip, persistent by default \\
+\addlinespace
+SHAP slow on LightGBM & \texttt{shap.TreeExplainer} & Gain-based feature importance from LightGBM directly (less accurate but fast) \\
+\addlinespace
+What-if intent parsing unreliable & Groq LLM parse & Rule-based keyword fallback for common cases (mode\_change, route\_change) \\
+\addlinespace
+HF Spaces too slow & HF Spaces & Streamlit Community Cloud \\
+\addlinespace
+PDF parsing chaotic & pypdf & Convert corpus to .txt manually, commit, parse as plain text \\
+\addlinespace
+sentence-transformers slow & all-MiniLM-L6-v2 & bge-small-en-v1.5 (smaller, faster on CPU) \\
+\addlinespace
+16GB RAM pressure & float32 embeddings & Cast to float16; FAISS IVF index \\
+\bottomrule
+\end{tabularx}
+
+% ── 6. Risk Flags ────────────────────────────────────────────────────────────
+\section{Risk Flags}
+
+\begin{warnbox}
+\textbf{1. Time-based split is mandatory.} USAID has a date column. Use time-based split (80/20 at Dec 2013). Random split on temporal data = silent leakage. Will come up in interviews.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{2. SHAP grounds the explanation --- without it, LLM hallucinates.} Do not skip SHAP. An LLM explaining a prediction without being shown the actual model drivers is guessing. This is the most common mistake in ``explainable AI'' demos and interviewers notice.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{3. UNCTAD temporal mismatch must be disclosed.} USAID: 2006--2015. UNCTAD: 2016--2021. No year overlap. UNCTAD is a structural benchmark, not a time-matched join. State this explicitly in README and interviews. The defensible framing: bilateral freight rate intensities are structural signals that change slowly; using the 2016--2021 median as a lane benchmark is standard practice in freight gravity-model research.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{4. UNCTAD coverage audit is Week 2's most important output.} If coverage is thin, the UNCTAD feature may hurt more than it helps (high NaN rate + weak signal = noisy feature). Run the audit before building the full pipeline. Know your fallback hierarchy: HS4 match $\rightarrow$ HS2 aggregate $\rightarrow$ mode-level country-pair average $\rightarrow$ NaN (LightGBM handles).
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{5. What-if intent parsing is the hardest piece.} LLM-based intent extraction can be flaky. Test with 20+ diverse messages. Build the rule-based fallback from the alternatives table. Two LLM calls per what-if query = double rate limit exposure. Cache aggressively.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{6. st.session\_state in Streamlit.} Stateful chat requires careful session state management. Streamlit reruns the entire script on every interaction. The shipment dict and chat history must live in \texttt{st.session\_state} or they reset. Test before Week 10 build-out.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{7. Week 6 buffer is non-negotiable.} Do not skip it when feeling ahead in Week 4.
+\end{warnbox}
+
+\begin{warnbox}
+\textbf{8. Groq TOS.} Verify Groq free tier allows public portfolio demo use before launch.
+\end{warnbox}
+
+% ── 7. What NOT To Do ────────────────────────────────────────────────────────
+\section{What NOT To Do}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{No deep learning on tabular data.} Red flag in SC interviews.
+  \item \textbf{No Streamlit before Week 10.} Model and explanation must be solid first.
+  \item \textbf{No Docker.} HF Spaces handles it.
+  \item \textbf{No MLflow/W\&B.} Mention in README next steps, do not implement.
+  \item \textbf{No custom embedding fine-tuning.} Out of scope.
+  \item \textbf{No random split if data is temporal.} See Risk Flag 1.
+  \item \textbf{Do not let the LLM explain without SHAP input.} See Risk Flag 2.
+  \item \textbf{Do not pretend UNCTAD is a time-matched join.} See Risk Flag 3.
+  \item \textbf{Do not force UNCTAD into the model if coverage audit fails.} See Risk Flag 4 and Alternatives Table.
+\end{itemize}
+
+% ── 8. Success Criteria ──────────────────────────────────────────────────────
+\section{Success Criteria}
+
+Project A1 is done when all of the following are true:
+
+\begin{enumerate}
+  \item Deployed Streamlit app on HF Spaces, live and accessible via public URL.
+  \item Tab 1: predicts cost from shipment form; UNCTAD benchmark shown alongside prediction.
+  \item Tab 1: plain-English explanation with SHAP feature table, UNCTAD callout, and cited trade doc context.
+  \item Tab 2: chat understands current shipment context from session state.
+  \item Tab 2: what-if queries rerun model (with updated UNCTAD lookup if lane changed) and return new prediction + delta + explanation.
+  \item Tab 2: general trade questions answered via RAG with citations.
+  \item GitHub repo has clean README with results table (RMSE/MAE baseline vs LightGBM), UNCTAD coverage stats, demo link, architecture description, two screenshots.
+  \item You can answer 14 interview questions about this project without notes, including the UNCTAD temporal mismatch question.
+  \item LightGBM beats linear baseline on RMSE.
+  \item OR: UNCTAD feature dropped after coverage audit fails --- USAID-only model shipped, README updated honestly.
+\end{enumerate}
+
+\begin{infobox}
+\textbf{Next checkpoint:} Week 2 --- post UNCTAD coverage audit results: what \% of USAID rows get direct match, what \% fallback, what \% NaN. Post correlation between UNCTAD rates and USAID actual costs. Go/no-go decision on UNCTAD feature before building pipeline.
+\end{infobox}
+
+\end{document}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ```````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````T6'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

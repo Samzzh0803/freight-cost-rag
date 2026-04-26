@@ -1,0 +1,17 @@
+pandas>=2.0
+numpy
+scikit-learn>=1.3
+xgboost
+lightgbm
+shap
+matplotlib
+seaborn
+jupyter
+sentence-transformers
+faiss-cpu
+pypdf
+groq
+streamlit
+python-dotenv
+pytest
+ruff
