@@ -68,5 +68,5 @@ pytest tests/ -v
 - [x] Week 1: USAID EDA
 - [x] Week 2: UNCTAD EDA + coverage audit (passed 30% gate)
 - [x] Week 3: Feature engineering, tests, time-based split
-- [ ] Week 4: Baseline + tree models + SHAP stub
-- [ ] Weeks 5–13: UNCTAD analysis, RAG, what-if chat, Streamlit, deploy
+- [x] Week 4-5: Baseline + tree models + SHAP stub
+- [ ] Weeks 6–13: UNCTAD analysis, RAG, what-if chat, Streamlit, deploy
