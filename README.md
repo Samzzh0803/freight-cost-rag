@@ -1,3 +1,14 @@
+---
+title: Freight Cost Intelligence
+emoji: 📦
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: 1.57.0
+app_file: app/streamlit_app.py
+pinned: false
+---
+
 # Freight Cost Intelligence
 
 Health commodity freight cost prediction on USAID shipment data, enriched with UNCTAD bilateral freight rate benchmarks as a lane-level cost signal. Includes a SHAP-grounded LLM explanation layer, a curated RAG corpus, and a what-if scenario chat that reruns the model on modified inputs.
