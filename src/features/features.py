@@ -49,11 +49,18 @@ def build_route_map(df: pd.DataFrame) -> dict:
     return {r: i for i, r in enumerate(unique_routes)}
 
 
+def build_product_group_map(df: pd.DataFrame) -> dict:
+    """Build product_group -> integer mapping from train data for stable inference."""
+    values = sorted(df["product_group"].fillna("Unknown").astype(str).unique())
+    return {value: idx for idx, value in enumerate(values)}
+
+
 def build_features(
     df: pd.DataFrame,
     unctad_lookup: dict | None = None,
     route_map: dict | None = None,
     weight_bin_edges: np.ndarray | None = None,
+    product_group_map: dict | None = None,
 ) -> pd.DataFrame:
     """
     Transform cleaned USAID df into model-ready feature matrix.
@@ -72,6 +79,9 @@ def build_features(
         Bin edges from get_weight_bin_edges(df_train). Pass None during training
         (edges computed from df). Pass the training edges for test/inference so
         both splits use identical bucket boundaries — prevents leakage.
+    product_group_map : dict | None
+        Mapping from build_product_group_map(df_train). Pass at inference so
+        product groups keep the same encoded values the model saw in training.
 
     Returns
     -------
@@ -103,8 +113,12 @@ def build_features(
     # Trees (LightGBM) treat it as categorical and ignore integer magnitude.
     # LinearRegression will treat it as continuous — baseline coefficients for this
     # feature are not interpretable as a direction.
-    le_pg = LabelEncoder()
-    out["product_group_enc"] = le_pg.fit_transform(df["product_group"].fillna("Unknown"))
+    product_series = df["product_group"].fillna("Unknown").astype(str)
+    if product_group_map is None:
+        le_pg = LabelEncoder()
+        out["product_group_enc"] = le_pg.fit_transform(product_series)
+    else:
+        out["product_group_enc"] = product_series.map(product_group_map).fillna(-1).astype(int)
 
     # Year — capped at MAX_TRAIN_YEAR so inference values beyond training range
     # don't extrapolate silently (tree assigns them to last leaf anyway, but

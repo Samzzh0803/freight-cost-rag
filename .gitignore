@@ -12,3 +12,14 @@ models/
 .idea/
 *.log
 .streamlit/secrets.toml
+
+# Internal planning and session notes — not for public repo
+*.tex
+WEEK_*_HANDOFF.md
+WEEK_*_COMPLETION.md
+INTERVIEW_PREP.md
+notes/
+status.txt
+status-unctad.ipynb
+anaconda_projects/
+.claude/

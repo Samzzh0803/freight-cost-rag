@@ -39,14 +39,26 @@ INCO_MAP = {
     "N/A - From RDC": "RDC",
 }
 
+_COMPANY_SUFFIXES = {
+    "inc", "ltd", "llc", "lc", "llp", "corp", "co", "gmbh", "ag", "plc",
+    "sa", "nv", "bv", "limited", "incorporated", "company", "pvt", "pte",
+}
+
 
 def _extract_country_from_site(site: str) -> str:
     """Pull origin country from Manufacturing Site (e.g. 'Cipla Ltd, Mumbai, India' → 'India').
-    Heuristic — last comma segment. Returns '' for unparseable values."""
+    Heuristic — last comma segment, skipping company suffixes. Returns '' for unparseable values."""
     if not isinstance(site, str):
         return ""
     parts = [p.strip().rstrip(".") for p in site.split(",")]
-    return parts[-1] if len(parts) > 1 else ""
+    if len(parts) < 2:
+        return ""
+    candidate = parts[-1]
+    if candidate.lower() in _COMPANY_SUFFIXES:
+        candidate = parts[-2] if len(parts) >= 3 else ""
+        if candidate.lower() in _COMPANY_SUFFIXES:
+            return ""
+    return candidate
 
 
 def load_raw() -> pd.DataFrame:

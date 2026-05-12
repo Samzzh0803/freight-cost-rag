@@ -10,7 +10,14 @@ import pandas as pd
 import pytest
 
 from src.data.load_usaid import load_clean
-from src.features.features import build_features, build_route_map, get_target, feature_names, LGBM_CAT_FEATURES
+from src.features.features import (
+    LGBM_CAT_FEATURES,
+    build_features,
+    build_product_group_map,
+    build_route_map,
+    feature_names,
+    get_target,
+)
 
 
 @pytest.fixture(scope="module")
@@ -113,3 +120,24 @@ def test_year_capped_at_max_train_year():
     })
     X_dummy = build_features(dummy, unctad_lookup=None)
     assert X_dummy["year"].iloc[0] == MAX_TRAIN_YEAR
+
+
+def test_product_group_mapping_stable_at_inference(df):
+    product_group_map = build_product_group_map(df)
+    inference_row = pd.DataFrame({
+        "Weight_kg": [100.0, 100.0],
+        "mode": ["Air", "Air"],
+        "inco_group": ["ExWorks", "ExWorks"],
+        "product_group": ["ARV", "__unknown_group__"],
+        "year": [2012, 2012],
+        "origin_country": ["India", "India"],
+        "dest_country": ["Kenya", "Kenya"],
+    })
+    X_infer = build_features(
+        inference_row,
+        unctad_lookup=None,
+        route_map=build_route_map(df),
+        product_group_map=product_group_map,
+    )
+    assert X_infer["product_group_enc"].iloc[0] == product_group_map["ARV"]
+    assert X_infer["product_group_enc"].iloc[1] == -1
