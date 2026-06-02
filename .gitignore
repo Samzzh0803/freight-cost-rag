@@ -7,8 +7,11 @@ data/raw/
 !data/raw/usaid/SCMS_Delivery_History_Dataset_20150929.csv
 !data/raw/unctad/unctad_transport_costs_bilateral.csv
 data/processed/
+data/index/
 models/
 !models/usaid_model.pkl
+notebooks/figures/
+*.pdf
 *.ipynb_checkpoints/
 .DS_Store
 .vscode/
