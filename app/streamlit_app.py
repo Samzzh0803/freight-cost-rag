@@ -37,6 +37,99 @@ INCO_OPTIONS = ["ExWorks", "DDP", "CIF", "RDC", "Other"]
 MODE_OPTIONS = ["Air", "Ocean", "Truck", "Other"]
 BASELINE_YEAR = 2015
 
+# Example shipments for "Try This" quick-start buttons
+EXAMPLE_SHIPMENTS = {
+    "India → Kenya (Air)": {
+        "origin_country": "India",
+        "dest_country": "Kenya",
+        "mode": "Air",
+        "Weight_kg": 850.0,
+        "inco_group": "ExWorks",
+        "product_group": "ARV",
+        "year": 2026,
+    },
+    "South Africa → Uganda (Ocean)": {
+        "origin_country": "South Africa",
+        "dest_country": "Uganda",
+        "mode": "Ocean",
+        "Weight_kg": 5000.0,
+        "inco_group": "CIF",
+        "product_group": "HRDT",
+        "year": 2026,
+    },
+    "US → Nigeria (Truck)": {
+        "origin_country": "United States",
+        "dest_country": "Nigeria",
+        "mode": "Truck",
+        "Weight_kg": 2500.0,
+        "inco_group": "DDP",
+        "product_group": "ARV",
+        "year": 2026,
+    },
+    "India → Rwanda (Air, Heavy)": {
+        "origin_country": "India",
+        "dest_country": "Rwanda",
+        "mode": "Air",
+        "Weight_kg": 15000.0,
+        "inco_group": "CIF",
+        "product_group": "HRDT",
+        "year": 2026,
+    },
+}
+
+HOW_IT_WORKS = """
+## How It Works
+
+This system combines **machine learning**, **enriched benchmarks**, and **retrieval-augmented generation** to predict freight costs:
+
+```
+┌─────────────────┐
+│  USAID Data     │  Training: ~10k shipments (2006-2015)
+│  (2006-2015)    │  Target: Freight cost USD
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ UNCTAD Enrichment                       │
+│ Lane-level $/kg benchmarks as signal    │
+│ (destination-tier structural benchmark) │
+└────────┬────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│ Feature Engineering                      │
+│ log(weight), mode, INCO, route, etc.     │
+└────────┬─────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│ LightGBM Model                           │
+│ Prediction: USD + SHAP feature drivers   │
+│ R² = 0.652 (test split)                  │
+└────────┬─────────────────────────────────┘
+         │
+         ├────────────────────────────┐
+         ▼                            ▼
+   ┌─────────────┐         ┌──────────────────┐
+   │ SHAP Values │         │ FAISS + Retriever│
+   │ (explainer) │         │ (context search) │
+   └─────────────┘         └────────┬─────────┘
+                                    │
+                                    ▼
+                           ┌──────────────────┐
+                           │ Groq LLM         │
+                           │ (explanation &   │
+                           │  what-if chat)   │
+                           └──────────────────┘
+```
+
+**Key Design Choices:**
+- **Time-based split:** 80% pre-Dec 2013 / 20% post-Dec 2013 (respects temporal order)
+- **UNCTAD as structure:** Bilateral rate signals tell the model destination tiers (not a live forecast)
+- **Model year frozen at 2015:** All predictions use 2015-equivalent baseline; scenario years supported for RAG context only
+- **No Docker needed:** Runs on HF Spaces CPU with cached assets
+"""
+
 _ISO2_TO_COUNTRY = {
     "AF": "Afghanistan", "AL": "Albania", "DZ": "Algeria", "AO": "Angola",
     "AT": "Austria", "BE": "Belgium", "BJ": "Benin", "BW": "Botswana",
@@ -463,16 +556,24 @@ def _assess_prediction_support(reference: dict[str, Any], shipment: dict[str, An
 
 def _predict_and_explain(shipment: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], float]:
     prediction = predict_shipment(shipment)
-    augmented = rag_augmented_prediction(
-        prediction_usd=prediction["prediction_usd"],
-        shap_values=prediction["shap_values"],
-        feature_names=prediction["feature_names"],
-        feature_values=prediction["feature_values"],
-        shipment_mode=str(shipment["mode"]),
-        destination_country=str(shipment["dest_country"]),
-        scenario_year=shipment.get("year"),
-        shipment_context=shipment,
-    )
+    try:
+        augmented = rag_augmented_prediction(
+            prediction_usd=prediction["prediction_usd"],
+            shap_values=prediction["shap_values"],
+            feature_names=prediction["feature_names"],
+            feature_values=prediction["feature_values"],
+            shipment_mode=str(shipment["mode"]),
+            destination_country=str(shipment["dest_country"]),
+            scenario_year=shipment.get("year"),
+            shipment_context=shipment,
+        )
+    except RuntimeError as exc:
+        if "rate_limit" in str(exc).lower() or "quota" in str(exc).lower():
+            raise RuntimeError(
+                "⚠️ Groq API rate limit reached. Please try again in a moment. "
+                "This is a temporary service limit, not an app error."
+            ) from exc
+        raise
     signal = prediction["feature_values"].get("unctad_rate_usd_kg")
     return prediction, augmented, signal
 
@@ -481,11 +582,22 @@ def _handle_prediction_submit(shipment: dict[str, Any]) -> None:
     try:
         prediction, augmented, signal = _predict_and_explain(shipment)
     except RuntimeError as exc:
-        st.error(str(exc))
+        error_msg = str(exc)
+        if "rate_limit" in error_msg.lower() or "quota" in error_msg.lower():
+            st.warning(error_msg)
+        else:
+            st.error(error_msg)
         return
     except Exception as exc:
-        st.error(f"Prediction failed: {exc}")
-        st.warning("Check that the model file, raw data, and local index assets are available.")
+        error_msg = str(exc)
+        if "rate_limit" in error_msg.lower() or "quota" in error_msg.lower():
+            st.warning(
+                "⚠️ Groq API rate limit reached. Please try again in a moment. "
+                "This is a temporary service limit, not an app error."
+            )
+        else:
+            st.error(f"Prediction failed: {exc}")
+            st.warning("Check that the model file, raw data, and local index assets are available.")
         return
 
     st.session_state["shipment"] = shipment
@@ -548,6 +660,21 @@ def _render_prediction_results() -> None:
         st.success("Shipment is ready in What-If Chat. Open the second tab to continue.")
 
 def _render_predict_tab(reference: dict[str, Any]) -> None:
+    # "How It Works" collapsible section
+    with st.expander("📊 How It Works", expanded=False):
+        st.markdown(HOW_IT_WORKS)
+
+    # Example shipments ("Try This" buttons)
+    st.subheader("Try These Examples")
+    example_cols = st.columns(len(EXAMPLE_SHIPMENTS))
+    for idx, (example_name, example_shipment) in enumerate(EXAMPLE_SHIPMENTS.items()):
+        with example_cols[idx]:
+            if st.button(f"📦 {example_name}", use_container_width=True, key=f"example_{idx}"):
+                st.session_state["shipment"] = example_shipment
+                st.rerun()
+
+    st.divider()
+
     shipment = st.session_state["shipment"] or DEFAULT_SHIPMENT
     preselected_origin = shipment["origin_country"]
     preselected_dest = shipment["dest_country"]
@@ -725,10 +852,27 @@ def _render_chat_tab() -> None:
         try:
             result = whatif_chat(user_message, shipment)
         except RuntimeError as exc:
-            st.error(str(exc))
+            error_msg = str(exc)
+            if "rate_limit" in error_msg.lower() or "quota" in error_msg.lower():
+                st.warning(
+                    "⚠️ Groq API rate limit reached. Please try again in a moment. "
+                    "This is a temporary service limit, not an app error."
+                )
+                result["answer"] = "Groq API rate limit reached. Please try again shortly."
+            else:
+                st.error(error_msg)
+                result["answer"] = error_msg
         except Exception as exc:
-            st.error(f"Chat request failed: {exc}")
-            result["answer"] = "Something went wrong. Check the terminal for details."
+            error_msg = str(exc)
+            if "rate_limit" in error_msg.lower() or "quota" in error_msg.lower():
+                st.warning(
+                    "⚠️ Groq API rate limit reached. Please try again in a moment. "
+                    "This is a temporary service limit, not an app error."
+                )
+                result["answer"] = "Groq API rate limit reached. Please try again shortly."
+            else:
+                st.error(f"Chat request failed: {exc}")
+                result["answer"] = "Something went wrong. Please try again."
         _render_chat_response(result)
 
     st.session_state["chat_history"].append({"role": "assistant", "content": result})

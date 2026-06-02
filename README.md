@@ -123,6 +123,54 @@ streamlit run app/streamlit_app.py
 
 The app loads the saved model (`models/usaid_model.pkl`), FAISS index (`data/index/`), and UNCTAD lookup on startup. The prediction and deterministic explanation work without an API key. LLM-generated explanations require `GROQ_API_KEY`.
 
+## Deployment on HuggingFace Spaces
+
+This app is designed to run on HuggingFace Spaces with Streamlit SDK on free CPU hardware.
+
+### Setup Steps
+
+1. **Create a new HF Space:**
+   - Owner: your HF org
+   - SDK: Streamlit (v1.57.0)
+   - Hardware: Free (CPU)
+   - Visibility: Public or Protected
+
+2. **Link to GitHub:**
+   - Connect to the main branch of this repo
+   - HF will auto-deploy on push
+
+3. **Add API key to Secrets:**
+   - In HF Space settings → "Secrets", add:
+     - **GROQ_API_KEY**: your Groq API key (for LLM explanation & chat)
+
+4. **Cold Start Note:**
+   - **First load takes 1–2 minutes** (model, FAISS index, and UNCTAD lookup load into memory on app startup)
+   - Subsequent loads are instant (assets stay cached)
+   - CPU hardware is slower than GPU, but the app fits in memory easily
+
+### Features
+
+- **Tab 1 — Predict & Explain:**
+  - Form: origin, destination, mode, weight, commodity, INCO, year
+  - Output: LightGBM prediction, SHAP drivers, UNCTAD signal, RAG explanation + sources
+  - "Try These Examples" buttons for instant demo shipments
+
+- **Tab 2 — What-If Chat:**
+  - Pre-seeded with shipment from Tab 1
+  - Handles what-if questions ("What if I use sea instead of air?") and knowledge queries ("What does CIF mean?")
+  - Shows modified prediction + delta + explanation + sources
+
+- **"How It Works" Section:**
+  - Collapsible diagram showing USAID → UNCTAD → Model → RAG → LLM pipeline
+  - Links to limitations & design decisions
+
+### Rate Limit Handling
+
+If the Groq API hits rate limits (free tier has limits), the app shows:
+> ⚠️ Groq API rate limit reached. Please try again in a moment. This is a temporary service limit, not an app error.
+
+The prediction path works without the LLM, so basic predictions still succeed even if explanations fail.
+
 ## Tests
 
 ```bash
